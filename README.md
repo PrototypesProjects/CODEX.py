@@ -10,7 +10,7 @@ comments extracted onto light (even) sheets.
 Also, it generates this README.md file.
 
 ## 1. Options
-
+Note how 'argparse' is imported. It's comes with standard library of Python. You can install 3rd party packages with 'pip install package-name' command in a Command Line of your OS.
 Program './CODEX.Py' supports following options:
 
  * '--width 1024' - of the output page
@@ -20,3 +20,6 @@ Program './CODEX.Py' supports following options:
  * '--uppercase-underlay' - under white 
  * '--uppercase-overlay' - over the code, so it would be only visible from far away 
 
+
+
+##
