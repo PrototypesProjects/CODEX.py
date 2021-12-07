@@ -7,6 +7,8 @@ Creates a PDF file that contains text
 of this program on the dark (odd) sheets with 
 comments extracted onto light (even) sheets.
 
+Also, it generates this README.md file.
+
 ## 1. Options
 
 Program './CODEX.Py' supports following options:
