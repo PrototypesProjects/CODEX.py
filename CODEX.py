@@ -2,7 +2,7 @@ import argparse
 import math
 import random
 
-from reportlab.lib.colors import black, white
+from reportlab.lib.colors import black, white, Color, yellow
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.units import inch, cm
@@ -45,6 +45,76 @@ def ROMAN_NUMBERS(R, only_length=4):
             yield ROMAN_NUMBER
 
 
+def DRAW_PAGE_BACKGROUND(c, w, h, corners_font_size, roman_number, background_color, stroke_colors, corner_decoration_alpha):
+    def GET_CORNER_DECORATION_COLOR():
+        return Color(random.uniform(0.8, 1),
+                     random.uniform(0.8, 1),
+                     random.uniform(0.8, 1),
+                     corner_decoration_alpha)
+
+    c.saveState()
+    c.setFillColor(background_color)
+    c.rect(0, 0, w * cm, h * cm, fill=1)  # breaks preview in chrome
+
+    c.setStrokeColor(stroke_colors[0])
+    # c.setStrokeColorRGB(1, 0.3, 0.4, 0.1)
+
+    c.line(0, 0, w * cm, h * cm)
+    c.line(w * cm, 0, 0, h * cm)
+
+    K = corners_font_size * 23.8
+
+    for x in range(0, int(w * cm), 2):
+        c.setLineWidth(w * cm / K / math.sqrt(abs(w * cm / 2 - x)))
+
+        c.setStrokeColor(stroke_colors[1])
+        c.line(x, 0, x, h * cm)
+
+    for y in range(0, int(h * cm), 2):
+        c.setLineWidth(h * cm / K * (w / h) / math.sqrt(abs(h * cm / 2 - y)))
+        c.line(0, y, w * cm, y)
+
+    c.restoreState()
+
+    MARGIN_WIDTH = 0.1 * cm
+    MARGIN_HEIGHT = 0.03 * cm
+
+    c.setFont(FONT_NAME, corners_font_size)
+
+    c.saveState()
+    c.translate(MARGIN_WIDTH, MARGIN_HEIGHT)
+    angle = -math.atan(w / h / 2)
+    c.rotate(math.degrees(angle))
+
+    c.setFillColor(GET_CORNER_DECORATION_COLOR())
+    c.drawCentredString(0, 0, f"{roman_number[0]}")
+    c.restoreState()
+
+    c.saveState()
+    c.translate(w * cm - MARGIN_WIDTH, MARGIN_HEIGHT)
+    c.rotate(-math.degrees(angle))
+
+    c.setFillColor(GET_CORNER_DECORATION_COLOR())
+    c.drawCentredString(0, 0, f"{roman_number[1]}")
+    c.restoreState()
+
+    c.saveState()
+    c.translate(w * cm - MARGIN_WIDTH, h * cm - MARGIN_HEIGHT)
+    c.rotate(math.degrees(angle) + 180)
+
+    c.setFillColor(GET_CORNER_DECORATION_COLOR())
+    c.drawCentredString(0, 0, f"{roman_number[2]}")
+    c.restoreState()
+
+    c.saveState()
+    c.translate(MARGIN_WIDTH, h * cm - MARGIN_HEIGHT)
+    c.rotate(180 - math.degrees(angle))
+
+    c.setFillColor(GET_CORNER_DECORATION_COLOR())
+    c.drawCentredString(0, 0, f"{roman_number[3]}")
+    c.restoreState()
+
+
 def MAIN():
     parser = argparse.ArgumentParser(description='THIS PROGRAM PRINTS OUT ITSELF AS A BOOK')
     parser.add_argument('--width', action="store", dest="width", type=float, default=21.0)
@@ -72,61 +142,28 @@ def MAIN():
 
     ROMAN_NUMBERS_GENERATOR = iter(ROMAN_NUMBERS(range(1, 4000)))
 
+    PAGE = 1
     for FONT_SIZE in FONT_SIZES:
-        c.setFillColor(black)
-        c.rect(0, 0, WIDTH * cm, HEIGHT * cm)  # breaks preview in chrome
-        c.setFillColor(white)
 
-        c.setStrokeColorRGB(1, 0.3, 0.4, 0.1)
-
-        c.line(0, 0, WIDTH * cm, HEIGHT * cm)
-        c.line(WIDTH * cm, 0, 0, HEIGHT * cm)
-
-        K =FONT_SIZE * 23.8
-
-        for x in range(0, int(WIDTH * cm), 2):
-            c.setLineWidth(WIDTH * cm/K/ math.sqrt(abs(WIDTH * cm / 2 - x)))
-
-            c.setStrokeColorRGB(1, 0.3, 0.4, 0.4)
-            c.line(x, 0, x, HEIGHT * cm)
-
-        for y in range(0, int(HEIGHT * cm), 2):
-            c.setLineWidth(HEIGHT * cm/K*(WIDTH/HEIGHT)/ math.sqrt(abs(HEIGHT * cm / 2 - y)))
-            c.line(0, y, WIDTH *cm, y)
-
-
-        c.setFont(FONT_NAME, FONT_SIZE)
-        MARGIN_WIDTH = 0.1 * cm
-        MARGIN_HEIGHT = 0.03 * cm
         try:
+
             ROMAN_NUMBER = next(ROMAN_NUMBERS_GENERATOR)
             ROMAN_NUMBER = ''.join(random.sample(ROMAN_NUMBER, len(ROMAN_NUMBER)))
-            c.saveState()
-            c.translate(MARGIN_WIDTH, MARGIN_HEIGHT)
-            angle = -math.atan(WIDTH / HEIGHT / 2)
-            c.rotate(math.degrees(angle))
-            c.drawCentredString(0, 0, f"{ROMAN_NUMBER[0]}")
-            c.restoreState()
 
-            c.saveState()
-            c.translate(WIDTH * cm - MARGIN_WIDTH, MARGIN_HEIGHT)
-            c.rotate(-math.degrees(angle))
-            c.drawCentredString(0, 0, f"{ROMAN_NUMBER[1]}")
-            c.restoreState()
-
-            c.saveState()
-            c.translate(WIDTH * cm - MARGIN_WIDTH, HEIGHT * cm - MARGIN_HEIGHT)
-            c.rotate(math.degrees(angle) + 180)
-            c.drawCentredString(0, 0, f"{ROMAN_NUMBER[2]}")
-            c.restoreState()
-
-            c.saveState()
-            c.translate(MARGIN_WIDTH, HEIGHT * cm - MARGIN_HEIGHT)
-            c.rotate(180 - math.degrees(angle))
-            c.drawCentredString(0, 0, f"{ROMAN_NUMBER[3]}")
-            c.restoreState()
+            DRAW_PAGE_BACKGROUND(c, WIDTH, HEIGHT, FONT_SIZE, ROMAN_NUMBER,
+                                 background_color=white,
+                                 stroke_colors=[Color(1, 0.3, 0.4, 0.1), Color(1, 0.3, 0.4, 0.4)],
+                                 corner_decoration_alpha=0.666)
 
             c.showPage()
+            DRAW_PAGE_BACKGROUND(c, WIDTH, HEIGHT, FONT_SIZE, ROMAN_NUMBER,
+                                 background_color=black,
+                                 stroke_colors= [Color(1,1,1,0.01), Color(0.6,0.6,0.6,0.07)],
+                                 corner_decoration_alpha=0.018)
+
+            c.showPage()
+
+            PAGE += 1
             print(f"  -  {ROMAN_NUMBER}")
         except StopIteration:
             break  # WE RUN OUT OF ROMAN NUMBERS
