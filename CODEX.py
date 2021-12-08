@@ -38,14 +38,15 @@ def primes(n):
     return [2] + [i for i in range(3, n, 2) if sieve[i]]
 
 
-def ROMAN_NUMBERS(R, only_length=4):
+def ROMAN_NUMBERS_GENERATOR(R, only_length=4):
     for X in R:
-        ROMAN_NUMBER = int_to_roman(X)
-        if len(ROMAN_NUMBER) == only_length:
-            yield ROMAN_NUMBER
+        result = int_to_roman(X)
+        if len(result) == only_length:
+            yield result
 
 
-def DRAW_PAGE_BACKGROUND(c, w, h, corners_font_size, roman_number, background_color, stroke_colors, corner_decoration_alpha):
+def DRAW_PAGE_BACKGROUND(c, w, h, corners_font_size, roman_number, background_color, stroke_colors,
+                         corner_decoration_alpha):
     def GET_CORNER_DECORATION_COLOR():
         return Color(random.uniform(0.8, 1),
                      random.uniform(0.8, 1),
@@ -54,10 +55,8 @@ def DRAW_PAGE_BACKGROUND(c, w, h, corners_font_size, roman_number, background_co
 
     c.saveState()
     c.setFillColor(background_color)
-    c.rect(0, 0, w * cm, h * cm, fill=1)  # breaks preview in chrome
-
+    c.rect(0, 0, w * cm, h * cm, fill=1)
     c.setStrokeColor(stroke_colors[0])
-    # c.setStrokeColorRGB(1, 0.3, 0.4, 0.1)
 
     c.line(0, 0, w * cm, h * cm)
     c.line(w * cm, 0, 0, h * cm)
@@ -119,7 +118,7 @@ def MAIN():
     parser = argparse.ArgumentParser(description='THIS PROGRAM PRINTS OUT ITSELF AS A BOOK')
     parser.add_argument('--width', action="store", dest="width", type=float, default=21.0)
     parser.add_argument('--height', action="store", dest="height", type=float, default=29.7)
-    parser.add_argument('--font_size_min', action="store", dest="font_size_min", type=int, default=20)
+    parser.add_argument('--font_size_min', action="store", dest="font_size_min", type=int, default=30)
     parser.add_argument('--font_size_max', action="store", dest="font_size_max", type=int, default=6660)
     parser.add_argument('--prime_font_sizes_only', dest='prime_font_sizes_only', action='store_true', default=True)
     ARGS = parser.parse_args()
@@ -140,15 +139,14 @@ def MAIN():
 
     print(f"FONT SIZES: {FONT_SIZES}")
 
-    ROMAN_NUMBERS_GENERATOR = iter(ROMAN_NUMBERS(range(1, 4000)))
+    ROMAN_NUMBERS = list(iter(ROMAN_NUMBERS_GENERATOR(range(1, 4000))))
 
     PAGE = 1
-    for FONT_SIZE in FONT_SIZES:
+    for FONT_SIZE in reversed(FONT_SIZES[:len(ROMAN_NUMBERS)]):
 
         try:
 
-            ROMAN_NUMBER = next(ROMAN_NUMBERS_GENERATOR)
-            ROMAN_NUMBER = ''.join(random.sample(ROMAN_NUMBER, len(ROMAN_NUMBER)))
+            ROMAN_NUMBER = ROMAN_NUMBERS[int(PAGE/2)]
 
             DRAW_PAGE_BACKGROUND(c, WIDTH, HEIGHT, FONT_SIZE, ROMAN_NUMBER,
                                  background_color=white,
@@ -158,7 +156,7 @@ def MAIN():
             c.showPage()
             DRAW_PAGE_BACKGROUND(c, WIDTH, HEIGHT, FONT_SIZE, ROMAN_NUMBER,
                                  background_color=black,
-                                 stroke_colors= [Color(1,1,1,0.01), Color(0.6,0.6,0.6,0.07)],
+                                 stroke_colors=[Color(1, 1, 1, 0.01), Color(0.6, 0.6, 0.6, 0.07)],
                                  corner_decoration_alpha=0.018)
 
             c.showPage()
